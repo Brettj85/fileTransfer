@@ -6,24 +6,47 @@ namespace ScripthostFileTransferUtility
     class Program
     {
         static void Main(string[] args)
-        {
-            string fileToCopy= "";
-            //find file name
+        {            
             DirectoryInfo originatingDirectory = new DirectoryInfo("PATH");
+
             FileInfo[] originatingDirectoryFiles = originatingDirectory.GetFiles();
+
+            string formatedDate = GetDate();
+
+            string fileToCopy = FindFileIfExists(originatingDirectoryFiles, formatedDate);
+
+            string currentFileLocation = Path.Combine("PATH", Path.GetFileName(fileToCopy));
+
+            string destinationDirectory = Path.Combine("PATH", Path.GetFileName(fileToCopy));
+            try
+            {
+                File.Copy(currentFileLocation, destinationDirectory, true);
+            }
+            catch (IOException ex)
+            {
+                //send e-mail to co worker containing ex.Message to alert them to correct file generation error on their server
+            }
+
+        }
+
+        public static string GetDate()
+        {
             DateTime todaysDate = DateTime.Now.Date;
-            string formatedDate = todaysDate.ToString("MM/dd/yyyy");
+            return todaysDate.ToString("MMddyyyy");
+        }
+
+        public static string FindFileIfExists(FileInfo[] originatingDirectoryFiles, string formatedDate)
+        {
             foreach (var fileName in originatingDirectoryFiles)
             {
-                string substringToLocate = formatedDate.Replace("/","");
-                if (fileName.ToString().Contains(substringToLocate))
+                string file = fileName.ToString();
+
+                if (file.Contains(formatedDate))
                 {
-                    fileToCopy = fileName.ToString();
+                    return fileName.ToString();
                 }
             }
-            string currentFileLocation = Path.Combine("PATH", Path.GetFileName(fileToCopy));
-            string destinationDirectory = Path.Combine("PATH", Path.GetFileName(fileToCopy));
-            File.Copy(currentFileLocation, destinationDirectory, true);
+            return "";
         }
     }
 }
